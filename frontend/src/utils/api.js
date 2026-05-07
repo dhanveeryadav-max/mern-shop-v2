@@ -1,19 +1,21 @@
 import axios from 'axios';
 
-const isLocal = window.location.hostname === 'localhost';
-
+// Vercel proxy configuration ke baad ab humein poore URL ki zaroorat nahi hai.
+// Ye local aur production dono pe apne aap sahi rasta dhund lega.
 const API = axios.create({ 
-  baseURL: isLocal 
-    ? '/api' 
-    : 'https://your-backend-api-url.com/api' // <--- Yahan BACKEND ka URL hona chahiye, frontend ka nahi!
+  baseURL: '/api' 
 });
 
-// Attach token to every request if available
+// Har request ke saath token bhejne ke liye interceptor
 API.interceptors.request.use((config) => {
   const userInfo = localStorage.getItem('userInfo');
   if (userInfo) {
-    const { token } = JSON.parse(userInfo);
-    config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const { token } = JSON.parse(userInfo);
+      config.headers.Authorization = `Bearer ${token}`;
+    } catch (error) {
+      console.error("Token parse error:", error);
+    }
   }
   return config;
 });
