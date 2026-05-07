@@ -1,6 +1,12 @@
 import axios from 'axios';
 
-const API = axios.create({ baseURL: '/api' });
+const isLocal = window.location.hostname === 'localhost';
+
+const API = axios.create({ 
+  baseURL: isLocal 
+    ? '/api' 
+    : 'https://your-backend-api-url.com/api' // <--- Yahan BACKEND ka URL hona chahiye, frontend ka nahi!
+});
 
 // Attach token to every request if available
 API.interceptors.request.use((config) => {
