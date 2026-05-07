@@ -23,6 +23,8 @@ export function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email || !password) return toast.error('Please fill all fields');
+    
     setLoading(true);
     try {
       const { data } = await API.post('/auth/login', { email, password });
@@ -38,17 +40,17 @@ export function LoginPage() {
 
   return (
     <div style={formStyle.wrap}>
-      <div style={formStyle.card}>
+      <form style={formStyle.card} onSubmit={handleSubmit}>
         <div style={formStyle.title}>🔐 Login</div>
-        <input style={formStyle.input} type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-        <input style={formStyle.input} type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
-        <button style={{ ...formStyle.btn, opacity: loading ? 0.7 : 1 }} onClick={handleSubmit} disabled={loading}>
+        <input style={formStyle.input} type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+        <input style={formStyle.input} type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+        <button type="submit" style={{ ...formStyle.btn, opacity: loading ? 0.7 : 1 }} disabled={loading}>
           {loading ? 'Logging in...' : 'Login'}
         </button>
         <div style={formStyle.footer}>
           New user? <Link to="/register" style={formStyle.link}>Register here</Link>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
@@ -59,11 +61,19 @@ export function RegisterPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Ye line zaroori hai!
+    
     if (form.password !== form.confirm) return toast.error('Passwords do not match');
+    if (form.password.length < 6) return toast.error('Password must be at least 6 characters');
+
     setLoading(true);
     try {
-      const { data } = await API.post('/auth/register', { name: form.name, email: form.email, password: form.password });
+      const { data } = await API.post('/auth/register', { 
+        name: form.name, 
+        email: form.email, 
+        password: form.password 
+      });
       login(data);
       toast.success('Account created!');
       navigate('/');
@@ -76,22 +86,21 @@ export function RegisterPage() {
 
   return (
     <div style={formStyle.wrap}>
-      <div style={formStyle.card}>
+      <form style={formStyle.card} onSubmit={handleSubmit}>
         <div style={formStyle.title}>📝 Register</div>
-        {['name', 'email', 'password', 'confirm'].map(field => (
-          <input key={field} style={formStyle.input}
-            type={field === 'password' || field === 'confirm' ? 'password' : field === 'email' ? 'email' : 'text'}
-            placeholder={field === 'confirm' ? 'Confirm Password' : field.charAt(0).toUpperCase() + field.slice(1)}
-            value={form[field]} onChange={e => setForm({ ...form, [field]: e.target.value })}
-          />
-        ))}
-        <button style={{ ...formStyle.btn, opacity: loading ? 0.7 : 1 }} onClick={handleSubmit} disabled={loading}>
+        <input style={formStyle.input} type="text" placeholder="Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
+        <input style={formStyle.input} type="email" placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
+        <input style={formStyle.input} type="password" placeholder="Password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required />
+        <input style={formStyle.input} type="password" placeholder="Confirm Password" value={form.confirm} onChange={e => setForm({ ...form, confirm: e.target.value })} required />
+        
+        <button type="submit" style={{ ...formStyle.btn, opacity: loading ? 0.7 : 1 }} disabled={loading}>
           {loading ? 'Creating...' : 'Create Account'}
         </button>
+        
         <div style={formStyle.footer}>
           Already have an account? <Link to="/login" style={formStyle.link}>Login</Link>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
